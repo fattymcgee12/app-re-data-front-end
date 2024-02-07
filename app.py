@@ -4,20 +4,30 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 import utils.db_utils as db
 
-#1 Initial configuration
+#1 Variables
+CREDS = 'canvas-antler-390503-b45684ca686c.json'
+
+#2 Initial configuration
 st.set_page_config(page_title='Real Estate Data', page_icon=':house_with_garden:', layout="wide")
 st.title('Real Estate Data')
 
-#2 Add features to sidebar:
+#3 Add features to sidebar:
 add_selectbox = st.sidebar.selectbox(
     'Select Dataset',
     ('Absentee Owners','Master Data')
 )
 
-#3 Pull list data
-absentee_owner_list_df = db.read_sql_from_bigQuery('SELECT * FROM canvas-antler-390503.DataLists.AbsenteeOwners LIMIT 1000')
+#4 Pull list data
+from google.cloud import bigquery
+## Run a query using a Service Account json credentials connection
+client = bigquery.Client.from_service_account_json(json_credentials_path=CREDS)
+sql = """
+    SELECT * FROM canvas-antler-390503.DataLists.AbsenteeOwners LIMIT 1000
+"""
+project_id = "canvas-antler-390503"
+absentee_owner_list_df = client.query(sql, project=project_id).to_dataframe()
 
-#4 Display dataframes
+#5 Display dataframes
 ## Absentee owner list
 st.header('Absentee Owners List')
 absentee_grid_table = AgGrid(absentee_owner_list_df, 

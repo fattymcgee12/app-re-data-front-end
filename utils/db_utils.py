@@ -6,14 +6,14 @@ from google.cloud import bigquery
 from google.cloud.bigquery import dbapi
 import pandas_gbq
 
-def connect_bigQuery_credentials(json_name: str = 'pythonbq.privateKey.json'):
+def connect_bigQuery_credentials(json_name: str):
     """
     Description: Establishes the GCP credentials path in order to make GCP API client connections
     Args: 
         json_name: The string name of the GCP private key json in main working directory
     Returns: None
     """
-    credentials_path = str(Path.cwd() / 'pythonbq.privateKey.json')
+    credentials_path = str(Path.cwd() / json_name)
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 
 def get_bigQuery_client():
