@@ -4,17 +4,9 @@ import os
 
 from google.cloud import bigquery
 from google.cloud.bigquery import dbapi
-import pandas_gbq
 
-def connect_bigQuery_credentials(json_name: str):
-    """
-    Description: Establishes the GCP credentials path in order to make GCP API client connections
-    Args: 
-        json_name: The string name of the GCP private key json in main working directory
-    Returns: None
-    """
-    credentials_path = str(Path.cwd() / json_name)
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+CREDS = 'real-estate-data-processing-dbfdca2ea196.json'
+PROJECT_ID = 'real-estate-data-processing'
 
 def get_bigQuery_client():
     """
@@ -23,7 +15,7 @@ def get_bigQuery_client():
     Returns: 
         bigquery.Client(): BigQuery client connection
     """
-    return bigquery.Client(project='canvas-antler-390503')
+    return bigquery.Client.from_service_account_json(json_credentials_path=CREDS)
 
 def get_bigQuery_connection():
     """
@@ -36,7 +28,8 @@ def get_bigQuery_connection():
     conn = dbapi.Connection(client)
     return conn
 
-
-def read_sql_from_bigQuery(sql:str, proj_id: str = 'canvas-antler-390503'):
-    df = pandas_gbq.read_gbq(sql, project_id=proj_id, progress_bar_type=None)
+def read_sql_from_bigQuery(sql:str, project_id: str):
+    client = get_bigQuery_client()
+    df = client.query(sql, project=project_id).to_dataframe()
+    df = df.fillna(value=pd.NA)
     return df
