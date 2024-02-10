@@ -1,6 +1,4 @@
 import pandas as pd
-from pathlib import Path 
-import os
 
 from google.cloud import bigquery
 from google.cloud.bigquery import dbapi
