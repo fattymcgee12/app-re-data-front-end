@@ -17,4 +17,4 @@ ENV PORT 8080
 
 EXPOSE ${PORT}
 
-ENTRYPOINT streamlit run app.py --server.port=${PORT} --server.address=0.0.0.0
+ENTRYPOINT streamlit run app.py --server.port=${PORT} --server.address=0.0.0.0 --server.baseUrlPath=/demo
