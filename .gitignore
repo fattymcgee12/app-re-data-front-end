@@ -161,3 +161,6 @@ cython_debug/
 
 # Credentials
 canvas-antler-390503-b45684ca686c.json
+
+# VSCode
+.vscode/
