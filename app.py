@@ -1,4 +1,6 @@
 import pandas as pd 
+import numpy as np
+import plotly.express as px
 
 from google.cloud import bigquery
 
@@ -7,6 +9,13 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 import utils.common_utils as utils
 import utils.db_utils as db
+
+def display_map(location_data):
+    fig = px.scatter_mapbox(location_data, lat='LAT', lon='LON', hover_name='Address', hover_data=['BuildingDescription', 'SF', 'AssessedValue'],zoom=10, size=location_data['SF'].astype('int'), color=location_data['SF'].astype('int'), color_continuous_scale=px.colors.cyclical.IceFire, height=750)
+    fig.update_layout(mapbox_style='carto-positron')
+    return fig
+
+# size=np.array(location_data.AssessedValue).astype(int)
 
 #1 Variables
 project_id = "real-estate-data-processing"
@@ -28,20 +37,28 @@ if dataset_select == 'Absentee Owners':
     city_list = city_list['City'].values.tolist()
     city_select = st.sidebar.multiselect(label='City:', options=city_list, default=city_list[0])
 
-    ## Put selections in query
+    ## Query selections for data table
     dataset_sql = f"""
             SELECT * 
             FROM real-estate-data-processing.DataLists.AbsenteeOwners 
             WHERE City {utils.list_to_in_phrase(city_select)}
         """
     
-## Query and display absentee owner data with selections
-display_df = db.read_sql_from_bigQuery(dataset_sql, project_id)
+    ## Columns to be displayed in table
+    display_cols = ['Address','City','County','State','OwnerName','OwnerAddress','OwnerCity','OwnerState','OwnerZip','BuildingDescription','SF','Bedrooms','Bathrooms','YearBuilt','AssessedValue','LastSalesPrice','LastSalesDate']
+    
+## Query data with selections
+main_df = db.read_sql_from_bigQuery(dataset_sql, project_id)
 
-#5 Display dataframe
-go_builder = GridOptionsBuilder.from_dataframe(display_df)
+## Display map with properties in dataframe
+px_map = display_map(main_df)
+st.plotly_chart(px_map, use_container_width=True)
+
+## Display dataframe
+## Filter dataframe with display columns
+go_builder = GridOptionsBuilder.from_dataframe(main_df[display_cols])
 go_builder.configure_grid_options(alwaysShowHorizontalScroll=True)
 go_builder.configure_pagination(enabled=True, paginationAutoPageSize=False, paginationPageSize=25)
 go = go_builder.build()
 
-agdf = AgGrid(display_df, gridOptions=go, theme='streamlit')
+agdf = AgGrid(main_df[display_cols], gridOptions=go, theme='streamlit')
